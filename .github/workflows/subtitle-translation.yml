@@ -59,7 +59,7 @@ jobs:
   translate-subtitles:
     runs-on: ubuntu-latest
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.subtitle-files != '[]' }}
+    if: needs.detect-changes.outputs.subtitle-files != '[]'
     strategy:
       matrix:
         subtitle-file: ${{ fromJson(needs.detect-changes.outputs.subtitle-files) }}
