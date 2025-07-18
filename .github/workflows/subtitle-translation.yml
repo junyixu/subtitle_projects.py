@@ -78,17 +78,9 @@ jobs:
           pip install pysrt rich typer aiohttp google-generativeai
 
       - name: Setup project workspace
-        run: |
-          mkdir -p subtitle_projects
-          cp -r subtitle_projects/* subtitle_projects/ || true
+        run: mkdir -p subtitle_projects
 
-      - name: Create translation project
-        run: |
-          filename=$(basename "${{ matrix.subtitle-file }}")
-          project_name="${filename%.*}"
-          python subtitle-translator.py create "$project_name" "${{ matrix.subtitle-file }}" --provider ${{ github.event.inputs.provider || 'gemini' }}
-
-      - name: Translate subtitles
+      - name: Create and translate
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
@@ -97,19 +89,14 @@ jobs:
         run: |
           filename=$(basename "${{ matrix.subtitle-file }}")
           project_name="${filename%.*}"
+          python subtitle-translator.py create "$project_name" "${{ matrix.subtitle-file }}" --provider ${{ github.event.inputs.provider || 'gemini' }}
           python subtitle-translator.py translate "$project_name"
-
-      - name: Export translated subtitles
-        run: |
-          filename=$(basename "${{ matrix.subtitle-file }}")
-          project_name="${filename%.*}"
-          output_file="translated_${filename}"
-          python subtitle-translator.py export "$project_name" -o "$output_file"
+          python subtitle-translator.py export "$project_name" -o "translated_${filename}"
 
       - name: Upload translated subtitles
         uses: actions/upload-artifact@v3
         with:
-          name: translated-${{ matrix.subtitle-file }}
+          name: translated-subtitles
           path: translated_*.srt
           retention-days: 30
 
