@@ -1,0 +1,35 @@
+1
+00:00:00,000 --> 00:00:04,000
+Welcome to this physics lecture on quantum mechanics.
+
+2
+00:00:04,000 --> 00:00:08,500
+Today we will discuss the Schrödinger equation and its applications.
+
+3
+00:00:08,500 --> 00:00:13,000
+The wave function describes the quantum state of a system.
+
+4
+00:00:13,000 --> 00:00:17,500
+Let's consider a particle in a one-dimensional potential well.
+
+5
+00:00:17,500 --> 00:00:22,000
+The boundary conditions require the wave function to vanish at the walls.
+
+6
+00:00:22,000 --> 00:00:26,500
+This leads to quantized energy levels, as we will see.
+
+7
+00:00:26,500 --> 00:00:31,000
+The energy eigenvalues are given by En = n²π²ħ²/(2mL²).
+
+8
+00:00:31,000 --> 00:00:35,500
+Where n is the quantum number, m is the particle mass, and L is the well width.
+
+9
+00:00:35,500 --> 00:00:40,000
+This is a fundamental result in quantum mechanics.
