@@ -308,7 +308,7 @@ class LLMClientManager:
             LLMProvider.ANTHROPIC: "claude-3-5-sonnet-20241022",
             LLMProvider.GEMINI: "gemini-1.5-flash",
             LLMProvider.DEEPSEEK: "deepseek-chat",
-            LLMProvider.ZHIPU: "glm-4-flash",
+            LLMProvider.ZHIPU: "glm-4-air",
             LLMProvider.MOONSHOT: "moonshot-v1-8k",
             LLMProvider.QWEN: "qwen-turbo",
             LLMProvider.OLLAMA: "qwen2.5:14b"
