@@ -1,6 +1,6 @@
 1
 00:00:00,000 --> 00:00:03,500
-Welcome to Introduction to Artificial Intelligence.
+Welcome to Introduction to Artificial Intelligence and Machine Learning.
 
 2
 00:00:03,500 --> 00:00:07,000
