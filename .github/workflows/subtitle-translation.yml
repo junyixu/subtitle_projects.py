@@ -28,11 +28,11 @@ on:
       provider:
         description: 'LLM Provider'
         required: false
-        default: 'gemini'
+        default: 'zhipu'
         type: choice
         options:
-          - gemini
           - zhipu
+          - gemini
           - qwen
           - openai
 
@@ -97,7 +97,7 @@ jobs:
         run: |
           filename=$(basename "${{ matrix.subtitle-file }}")
           project_name="${filename%.*}"
-          python subtitle-translator.py create "$project_name" "${{ matrix.subtitle-file }}" --provider ${{ github.event.inputs.provider || 'gemini' }}
+          python subtitle-translator.py create "$project_name" "${{ matrix.subtitle-file }}" --provider ${{ github.event.inputs.provider || 'zhipu' }}
           python subtitle-translator.py translate "$project_name"
           python subtitle-translator.py export "$project_name" -o "translated_${filename}"
 
