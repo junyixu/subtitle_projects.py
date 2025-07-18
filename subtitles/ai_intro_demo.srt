@@ -4,7 +4,7 @@ Welcome to Introduction to Artificial Intelligence.
 
 2
 00:00:03,500 --> 00:00:07,000
-Today we'll explore the fundamentals of machine learning.
+Today we'll explore the fundamentals of machine learning and AI.
 
 3
 00:00:07,000 --> 00:00:11,000
