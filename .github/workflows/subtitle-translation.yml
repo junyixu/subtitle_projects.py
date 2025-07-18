@@ -46,6 +46,10 @@ jobs:
       subtitle-files: ${{ steps.changes.outputs.changes }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+        with:
+          fetch-depth: 0
       
       - name: Detect subtitle file changes
         id: changes
@@ -74,6 +78,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -114,6 +120,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
