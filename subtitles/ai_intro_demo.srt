@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:03,500
+Welcome to Introduction to Artificial Intelligence.
+
+2
+00:00:03,500 --> 00:00:07,000
+Today we'll explore the fundamentals of machine learning.
+
+3
+00:00:07,000 --> 00:00:11,000
+Machine learning is a subset of AI that enables computers to learn from data.
+
+4
+00:00:11,000 --> 00:00:15,000
+There are three main types: supervised, unsupervised, and reinforcement learning.
+
+5
+00:00:15,000 --> 00:00:19,000
+Supervised learning uses labeled data to train models for prediction tasks.
+
+6
+00:00:19,000 --> 00:00:23,000
+Neural networks are inspired by the human brain's structure and function.
+
+7
+00:00:23,000 --> 00:00:27,000
+Deep learning uses multiple layers to extract features from raw data.
+
+8
+00:00:27,000 --> 00:00:31,000
+Natural language processing allows machines to understand human language.
+
+9
+00:00:31,000 --> 00:00:35,000
+Computer vision enables AI systems to interpret and analyze visual information.
+
+10
+00:00:35,000 --> 00:00:39,000
+Thank you for joining this AI introduction session.
