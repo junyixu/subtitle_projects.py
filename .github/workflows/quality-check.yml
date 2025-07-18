@@ -1,0 +1,113 @@
+name: Quality Check
+
+on:
+  pull_request:
+    paths:
+      - '**/*.srt'
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  validate-subtitles:
+    runs-on: ubuntu-latest
+    name: Validate Subtitle Files
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pysrt chardet
+
+      - name: Find subtitle files
+        id: find-files
+        run: |
+          find . -name "*.srt" -type f > subtitle_files.txt
+          echo "Found $(wc -l < subtitle_files.txt) subtitle files"
+
+      - name: Validate subtitle format
+        run: |
+          python << 'EOF'
+          import pysrt
+          import chardet
+          import sys
+          from pathlib import Path
+
+          def detect_encoding(file_path):
+              with open(file_path, 'rb') as f:
+                  raw_data = f.read()
+                  result = chardet.detect(raw_data)
+                  return result['encoding']
+
+          def validate_srt(file_path):
+              try:
+                  encoding = detect_encoding(file_path) or 'utf-8'
+                  subs = pysrt.open(file_path, encoding=encoding)
+                  
+                  issues = []
+                  
+                  # Check for empty subtitles
+                  empty_subs = [i for i, sub in enumerate(subs) if not sub.text.strip()]
+                  if empty_subs:
+                      issues.append(f"Empty subtitles at indices: {empty_subs}")
+                  
+                  # Check for overlapping subtitles
+                  for i in range(1, len(subs)):
+                      if subs[i].start < subs[i-1].end:
+                          issues.append(f"Overlapping subtitles: {i} and {i-1}")
+                  
+                  # Check for timing issues
+                  timing_issues = []
+                  for i, sub in enumerate(subs):
+                      if sub.start >= sub.end:
+                          timing_issues.append(i)
+                  if timing_issues:
+                      issues.append(f"Invalid timing (start >= end) at indices: {timing_issues}")
+                  
+                  return len(issues) == 0, issues, len(subs)
+                  
+              except Exception as e:
+                  return False, [str(e)], 0
+
+          # Validate all subtitle files
+          with open('subtitle_files.txt', 'r') as f:
+              files = [line.strip() for line in f if line.strip()]
+
+          all_valid = True
+          total_subtitles = 0
+          
+          print("Subtitle Validation Results:")
+          print("=" * 50)
+          
+          for file_path in files:
+              if Path(file_path).exists():
+                  valid, issues, count = validate_srt(file_path)
+                  total_subtitles += count
+                  
+                  status = "✅ VALID" if valid else "❌ INVALID"
+                  print(f"{status} - {file_path} ({count} subtitles)")
+                  
+                  if issues:
+                      for issue in issues:
+                          print(f"    ⚠️ {issue}")
+                      all_valid = False
+                  print()
+              else:
+                  print(f"❌ FILE NOT FOUND: {file_path}")
+                  all_valid = False
+
+          print(f"Total subtitles processed: {total_subtitles}")
+          
+          if not all_valid:
+              print("Some subtitle files have issues. Please fix them.")
+              sys.exit(1)
+          else:
+              print("All subtitle files are valid!")
+          EOF

@@ -1,0 +1,156 @@
+name: Automated Subtitle Translation
+
+on:
+  push:
+    paths:
+      - 'subtitles/*.srt'
+      - 'subtitles/**/*.srt'
+  pull_request:
+    paths:
+      - 'subtitles/*.srt'
+      - 'subtitles/**/*.srt'
+  workflow_dispatch:
+    inputs:
+      subtitle_file:
+        description: 'Subtitle file to translate'
+        required: true
+        type: string
+      target_language:
+        description: 'Target language'
+        required: false
+        default: 'chinese'
+        type: choice
+        options:
+          - chinese
+          - english
+          - japanese
+          - korean
+      provider:
+        description: 'LLM Provider'
+        required: false
+        default: 'gemini'
+        type: choice
+        options:
+          - gemini
+          - zhipu
+          - qwen
+          - openai
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      subtitle-files: ${{ steps.changes.outputs.subtitle-files }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Detect subtitle file changes
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            subtitle-files:
+              - 'subtitles/*.srt'
+              - 'subtitles/**/*.srt'
+
+  translate-subtitles:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.subtitle-files != '[]' }}
+    strategy:
+      matrix:
+        subtitle-file: ${{ fromJson(needs.detect-changes.outputs.subtitle-files) }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pysrt rich typer aiohttp google-generativeai
+
+      - name: Setup project workspace
+        run: |
+          mkdir -p subtitle_projects
+          cp -r subtitle_projects/* subtitle_projects/ || true
+
+      - name: Create translation project
+        run: |
+          filename=$(basename "${{ matrix.subtitle-file }}")
+          project_name="${filename%.*}"
+          python subtitle-translator.py create "$project_name" "${{ matrix.subtitle-file }}" --provider ${{ github.event.inputs.provider || 'gemini' }}
+
+      - name: Translate subtitles
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          QWEN_API_KEY: ${{ secrets.QWEN_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          filename=$(basename "${{ matrix.subtitle-file }}")
+          project_name="${filename%.*}"
+          python subtitle-translator.py translate "$project_name"
+
+      - name: Export translated subtitles
+        run: |
+          filename=$(basename "${{ matrix.subtitle-file }}")
+          project_name="${filename%.*}"
+          output_file="translated_${filename}"
+          python subtitle-translator.py export "$project_name" -o "$output_file"
+
+      - name: Upload translated subtitles
+        uses: actions/upload-artifact@v3
+        with:
+          name: translated-${{ matrix.subtitle-file }}
+          path: translated_*.srt
+          retention-days: 30
+
+  manual-translation:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pysrt rich typer aiohttp google-generativeai
+
+      - name: Setup project workspace
+        run: mkdir -p subtitle_projects
+
+      - name: Create and translate project
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          QWEN_API_KEY: ${{ secrets.QWEN_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          filename=$(basename "${{ github.event.inputs.subtitle_file }}")
+          project_name="${filename%.*}"
+          python subtitle-translator.py create "$project_name" "${{ github.event.inputs.subtitle_file }}" --provider ${{ github.event.inputs.provider }}
+          python subtitle-translator.py translate "$project_name"
+          python subtitle-translator.py export "$project_name" -o "translated_${filename}"
+
+      - name: Upload translation results
+        uses: actions/upload-artifact@v3
+        with:
+          name: manual-translation-${{ github.run_number }}
+          path: |
+            translated_*.srt
+            subtitle_projects/*/translation.log
+          retention-days: 90

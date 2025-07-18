@@ -203,7 +203,10 @@ class TranslationProject:
     def save_config(self):
         """保存项目配置"""
         with open(self.config_file, 'w', encoding='utf-8') as f:
-            json.dump(self.config.model_dump(), f, indent=2, ensure_ascii=False)
+            json.dump(self.config.model_dump(),
+                      f,
+                      indent=2,
+                      ensure_ascii=False)
 
     def load_segments(self) -> bool:
         """加载字幕片段"""
@@ -296,7 +299,7 @@ class LLMClientManager:
         }
 
         self.endpoints = {
-            LLMProvider.DEEPSEEK: "https://api.deepseek.com",
+            LLMProvider.DEEPSEEK: "https://poloai.top/v1",
             LLMProvider.ZHIPU: "https://open.bigmodel.cn/api/paas/v4",
             LLMProvider.MOONSHOT: "https://api.moonshot.cn/v1",
             LLMProvider.QWEN:
@@ -307,7 +310,7 @@ class LLMClientManager:
             LLMProvider.OPENAI: "gpt-4o-mini",
             LLMProvider.ANTHROPIC: "claude-3-5-sonnet-20241022",
             LLMProvider.GEMINI: "gemini-1.5-flash",
-            LLMProvider.DEEPSEEK: "deepseek-chat",
+            LLMProvider.DEEPSEEK: "deepseek-v3",
             LLMProvider.ZHIPU: "glm-4-air",
             LLMProvider.MOONSHOT: "moonshot-v1-8k",
             LLMProvider.QWEN: "qwen-turbo",
@@ -320,8 +323,10 @@ class LLMClientManager:
             raise ValueError(f"不支持的提供商: {provider}")
 
         # 为OpenAI兼容客户端传递provider参数
-        if provider in [LLMProvider.DEEPSEEK, LLMProvider.ZHIPU, 
-                       LLMProvider.MOONSHOT, LLMProvider.QWEN]:
+        if provider in [
+                LLMProvider.DEEPSEEK, LLMProvider.ZHIPU, LLMProvider.MOONSHOT,
+                LLMProvider.QWEN
+        ]:
             return self.providers[provider](provider, **kwargs)
         else:
             return self.providers[provider](**kwargs)
@@ -617,7 +622,7 @@ class SubtitleTranslationSystem:
         # 全局配置文件
         self.global_config_file = self.workspace / "global_config.json"
         self.load_global_config()
-        
+
         # 初始化LLM客户端管理器
         self.client_manager = LLMClientManager()
 
@@ -730,7 +735,7 @@ class SubtitleTranslationSystem:
                     # 正确转换 SubRipTime 到 timedelta
                     start_td = timedelta(milliseconds=item.start.ordinal)
                     end_td = timedelta(milliseconds=item.end.ordinal)
-                    
+
                     segment = SubtitleSegment(index=item.index,
                                               start=start_td,
                                               end=end_td,
@@ -919,7 +924,7 @@ class SubtitleTranslationSystem:
             # 正确转换 timedelta 到 SubRipTime
             start_ms = int(segment.start.total_seconds() * 1000)
             end_ms = int(segment.end.total_seconds() * 1000)
-            
+
             item = pysrt.SubRipItem(
                 index=segment.index,
                 start=pysrt.SubRipTime.from_ordinal(start_ms),
@@ -1012,7 +1017,8 @@ def create_project(
         project = system.create_project(name, source_file, config)
 
         # 显示项目信息
-        provider_display = provider.value if hasattr(provider, 'value') else str(provider)
+        provider_display = provider.value if hasattr(
+            provider, 'value') else str(provider)
         panel = Panel(f"""
 [bold green]项目创建成功！[/bold green]
 
@@ -1054,12 +1060,11 @@ def translate_project(
             provider_name = project.config.llm_provider
             if hasattr(provider_name, 'value'):
                 provider_name = provider_name.value
-                
+
             api_key = system.global_config["api_keys"].get(provider_name)
 
             if not api_key:
-                console.print(
-                    f"[red]❌ 未设置 {provider_name} 的API密钥")
+                console.print(f"[red]❌ 未设置 {provider_name} 的API密钥")
                 console.print(
                     f"💡 使用命令设置: python subtitle-translator.py config set-key {provider_name} <your-key>"
                 )
@@ -1139,13 +1144,13 @@ def show_project_status(project_name: str = typer.Argument(..., help="项目名�
         table.add_column("数值", style="green")
 
         table.add_row("项目名称", project.config.name)
-        
+
         # 安全地获取 provider 名称
         provider_name = project.config.llm_provider
         if hasattr(provider_name, 'value'):
             provider_name = provider_name.value
         table.add_row("LLM提供商", provider_name)
-        
+
         table.add_row("模型", project.config.model)
         table.add_row("总片段数", str(total))
         table.add_row("已完成", f"{completed} ({completed/total*100:.1f}%)")
