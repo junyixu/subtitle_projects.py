@@ -24,6 +24,7 @@ import asyncio
 import json
 import re
 import time
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any
@@ -647,11 +648,33 @@ class SubtitleTranslationSystem:
             }
         }
 
+        # 从文件加载配置
         if self.global_config_file.exists():
             with open(self.global_config_file, 'r', encoding='utf-8') as f:
                 self.global_config = json.load(f)
         else:
             self.global_config = default_config
+
+        # 从环境变量覆盖API密钥
+        env_mappings = {
+            "openai": ["OPENAI_API_KEY", "OPENAI_KEY"],
+            "anthropic": ["ANTHROPIC_API_KEY", "ANTHROPIC_KEY"],
+            "gemini": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+            "deepseek": ["DEEPSEEK_API_KEY", "DEEPSEEK_KEY"],
+            "zhipu": ["ZHIPU_API_KEY", "ZHIPU_KEY", "BIGMODEL_API_KEY"],
+            "moonshot": ["MOONSHOT_API_KEY", "MOONSHOT_KEY"],
+            "qwen": ["QWEN_API_KEY", "QWEN_KEY", "DASHSCOPE_API_KEY"]
+        }
+
+        for provider, env_vars in env_mappings.items():
+            for env_var in env_vars:
+                env_value = os.getenv(env_var)
+                if env_value:
+                    self.global_config["api_keys"][provider] = env_value
+                    break
+
+        # 如果文件不存在，保存合并后的配置
+        if not self.global_config_file.exists():
             self.save_global_config()
 
     def save_global_config(self):
