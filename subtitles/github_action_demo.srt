@@ -1,0 +1,31 @@
+1
+00:00:00,000 --> 00:00:04,000
+Hello everyone! Welcome to our physics lecture today.
+
+2
+00:00:04,000 --> 00:00:08,500
+Today we'll be discussing quantum mechanics and wave-particle duality.
+
+3
+00:00:08,500 --> 00:00:13,000
+The photoelectric effect demonstrates that light behaves as both waves and particles.
+
+4
+00:00:13,000 --> 00:00:17,500
+Einstein's equation E=mc² shows the relationship between energy and mass.
+
+5
+00:00:17,500 --> 00:00:22,000
+In quantum field theory, particles are excitations of underlying fields.
+
+6
+00:00:22,000 --> 00:00:26,500
+The Heisenberg uncertainty principle limits our knowledge of position and momentum.
+
+7
+00:00:26,500 --> 00:00:31,000
+Schrödinger's equation describes how quantum states evolve over time.
+
+8
+00:00:31,000 --> 00:00:35,500
+Thank you for attending today's lecture on quantum physics fundamentals.
